@@ -1,0 +1,81 @@
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root
+{
+    --background-c-low: #be2832;
+    --background-d: #d46d42;
+    --background-e: #eed66f;
+    --background-f: #9eca57;
+    --background-g: #558661;
+    --background-a: #412c65;
+    --background-b: #bd356e;
+    --background-c-high: #930300;
+    --text-color: #ffffff;
+    --shadow-color: #00000050;
+}
+
+main
+{
+    background-color: black;
+    overflow: hidden;
+    height: 100dvh;
+    width: 100dvw;
+}
+
+.boomwhacker
+{
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    color: var(--text-color);
+    font-size: 10dvh;
+    text-shadow: 0 0 10px var(--shadow-color);
+}
+
+#c-low
+{
+    background-color: var(--background-c-low);
+}
+
+#d
+{
+    background-color: var(--background-d);
+}
+
+#e
+{
+    background-color: var(--background-e);
+}
+
+#f
+{
+    background-color: var(--background-f);
+}
+
+#g
+{
+    background-color: var(--background-g);
+}
+
+#a
+{
+    background-color: var(--background-a);
+}
+
+#b
+{
+    background-color: var(--background-b);
+}
+
+#c-high
+{
+    background-color: var(--background-c-high);
+}
