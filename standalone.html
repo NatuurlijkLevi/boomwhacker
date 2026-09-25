@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boomwhacker Safari - Classroom Rhythm Play-Along (Standalone)</title>
+  <meta name="description" content="Feature-rich offline HTML5, CSS3, and JavaScript Classroom Rhythm Play-Along for Boomwhacker percussion tubes with MIDI import, accompaniment backing tracks, and tempo presets.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #042f2e;
+      color: #1e293b;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Screen containers */
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* Safari Sky Themes */
+    .safari-sky {
+      background: linear-gradient(180deg, #dcfce7 0%, #fef3c7 45%, #fed7aa 80%, #bbf7d0 100%);
+    }
+
+    /* Common Buttons */
+    .btn {
+      font-family: inherit;
+      font-weight: 800;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-emerald {
+      background-color: #059669;
+      color: white;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+    .btn-emerald:hover {
+      background-color: #10b981;
+    }
+
+    .btn-amber {
+      background-color: #f59e0b;
+      color: #451a03;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .btn-amber:hover {
+      background-color: #fbbf24;
+    }
+
+    .btn-teal {
+      background-color: #0f766e;
+      color: white;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+    }
+    .btn-teal:hover {
+      background-color: #14b8a6;
+    }
+
+    .btn-slate {
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-slate:hover {
+      background-color: white;
+    }
+
+    /* 1. HOME SCREEN */
+    #home-screen {
+      overflow-y: auto;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+    }
+
+    .home-header {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-blur: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(204, 251, 241, 0.8);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .home-hero {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 800px;
+      margin: auto 0;
+    }
+
+    .mascot-hero-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 30px;
+      background-color: #fbbf24;
+      border: 4px solid #fef08a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+      box-shadow: 0 16px 32px rgba(245, 158, 11, 0.3);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mascot-hero-avatar:hover {
+      transform: scale(1.08) rotate(3deg);
+    }
+
+    .hero-title {
+      font-size: 40px;
+      font-weight: 900;
+      color: #042f2e;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: 15px;
+      font-weight: 700;
+      color: #134e4a;
+      max-width: 580px;
+      margin-bottom: 18px;
+    }
+
+    .tube-pills-bar {
+      display: flex;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      margin-bottom: 22px;
+    }
+
+    .color-tube-pill {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      border: none;
+      color: white;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      transition: transform 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .color-tube-pill:hover {
+      transform: translateY(-4px) scale(1.1);
+    }
+
+    .home-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      padding: 16px 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      width: 100%;
+      max-width: 1000px;
+      margin-top: 10px;
+    }
+
+    .soundcheck-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .soundcheck-btn {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .soundcheck-btn:hover {
+      background: white;
+      border-color: #0f766e;
+      transform: translateY(-2px);
+    }
+    .soundcheck-btn.bouncing {
+      transform: scale(1.18);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5);
+    }
+
+    /* 2. SONG SELECTOR SCREEN */
+    .select-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #ccfbf1;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .select-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .song-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .song-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 2px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+      transition: all 0.2s ease;
+    }
+    .song-card:hover {
+      border-color: #14b8a6;
+      box-shadow: 0 10px 24px rgba(20, 184, 166, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* 3. RHYTHM HIGHWAY PLAYER SCREEN */
+    .player-header {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid #0f766e;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 30;
+      gap: 8px;
+    }
+
+    .highway-stage {
+      flex: 1;
+      position: relative;
+      background: radial-gradient(circle at 50% 10%, #0d463b 0%, #052620 50%, #021a15 100%);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .lane-col {
+      flex: 1;
+      height: 100%;
+      border-right: 1px dashed rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+    .lane-col:last-child {
+      border-right: none;
+    }
+
+    /* Strike Target Receptor Bar */
+    .strike-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 10px #14b8a6;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .strike-label {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      pointer-events: none;
+      z-index: 11;
+      white-space: nowrap;
+    }
+
+    .note-pill {
+      position: absolute;
+      left: 10%;
+      width: 80%;
+      height: 38px;
+      border-radius: 19px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 900;
+      font-size: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4);
+      z-index: 5;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+
+    /* 4. ANIMAL DOCK */
+    .animal-dock {
+      height: 140px;
+      background: #8cc595;
+      border-top: 4px solid #246249;
+      display: flex;
+      z-index: 20;
+      padding: 0 4px;
+      position: relative;
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.25);
+    }
+
+    .dock-cell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.15s ease;
+    }
+    .dock-cell:hover {
+      transform: translateY(-4px);
+    }
+    .dock-cell.bouncing {
+      animation: animalHop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .dock-cell.muted {
+      opacity: 0.3;
+      filter: grayscale(0.8);
+    }
+
+    @keyframes animalHop {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-28px) scale(1.15); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .dock-badge {
+      font-size: 11px;
+      font-weight: 900;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* MODALS */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 28px;
+      padding: 24px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Toast Notification */
+    #toast-msg {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #042f2e;
+      color: white;
+      border: 1px solid #14b8a6;
+      border-radius: 16px;
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      max-width: 90vw;
+    }
+
+    /* Tempo button group */
+    .tempo-group button {
+      border: none;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      background: white;
+      color: #0f766e;
+      transition: all 0.1s;
+    }
+    .tempo-group button:hover {
+      background: #0f766e;
+      color: white;
+    }
+    .tempo-group button.active {
+      background: #059669;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-msg">
+    <span id="toast-text">Success!</span>
+    <button onclick="hideToast()" style="background:none; border:none; color:#5eead4; cursor:pointer; font-weight:900; font-size:16px;">✕</button>
+  </div>
+
+  <!-- 1. HOME SCREEN -->
+  <div id="home-screen" class="screen safari-sky active">
+    <header class="home-header">
+      <div class="brand-badge">
+        <span style="font-size: 18px;">🦁</span>
+        <span style="font-size: 13px; font-weight: 900; color: #042f2e;">Boomwhacker Safari</span>
+        <span style="font-size: 10px; font-weight: 800; background: #0f766e; color: white; padding: 2px 8px; border-radius: 10px;">Offline Edition</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <!-- MIDI Import -->
+        <label class="btn btn-teal" style="padding: 8px 14px; font-size: 12px; cursor: pointer;">
+          📥 Import MIDI (.mid)
+          <input type="file" id="home-midi-input" accept=".mid,.midi" style="display:none;">
+        </label>
+        <!-- Teacher Settings -->
+        <button id="btn-home-settings" class="btn btn-slate" style="padding: 8px 12px; font-size: 14px;" title="Teacher Settings">
+          ⚙️ Settings
+        </button>
+      </div>
+    </header>
+
+    <div class="home-hero">
+      <div class="mascot-hero-avatar" id="conductor-mascot" title="Click to hear Note C!">🦁</div>
+      <h1 class="hero-title">Boomwhacker Safari</h1>
+      <p class="hero-subtitle">
+        Elementary Music Classroom Play-Along for Diatonic Percussion Tubes with Accompaniment Harmony & MIDI Scalability.
+      </p>
+
+      <div class="tube-pills-bar" id="home-tube-pills">
+        <!-- populated by js -->
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%;">
+        <button id="btn-start-select" class="btn btn-emerald" style="padding: 14px 28px; font-size: 16px;">
+          🎵 Choose Song & Play
+        </button>
+        <button id="btn-quick-play" class="btn btn-amber" style="padding: 14px 20px; font-size: 14px;">
+          ⚡ Quick: Ode to Joy
+        </button>
+        <button id="btn-quick-gallop" class="btn btn-teal" style="padding: 14px 20px; font-size: 14px;">
+          🚀 Fast: William Tell (152 BPM)
+        </button>
+      </div>
+    </div>
+
+    <!-- Soundcheck & Mascot Dock -->
+    <div class="home-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+        <div>
+          <h3 style="font-size: 14px; font-weight: 800; color: #1e293b;">Interactive Tube Soundcheck & Warm-Up</h3>
+          <p style="font-size: 11px; font-weight: 600; color: #64748b;">Click any animal or press keys 1–8 on your keyboard to test pitch</p>
+        </div>
+        <div id="soundcheck-last" style="font-size: 12px; font-weight: 800; color: #0f766e;">Sound Ready 🎶</div>
+      </div>
+
+      <div class="soundcheck-grid" id="home-soundcheck-grid">
+        <!-- populated by js -->
+      </div>
+    </div>
+
+    <footer style="padding: 10px; font-size: 11px; font-weight: 700; color: rgba(4, 47, 46, 0.7); text-align: center;">
+      Boomwhacker Safari Standalone • C Major / A Minor Diatonic Percussion System
+    </footer>
+  </div>
+
+  <!-- 2. SONG SELECTOR SCREEN -->
+  <div id="song-select-screen" class="screen safari-sky">
+    <header class="select-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="btn-select-back" class="btn btn-slate" style="padding: 8px 14px; font-size: 13px;">
+          ← Back to Safari Camp
+        </button>
+        <div>
+          <h2 style="font-size: 16px; font-weight: 900; color: #042f2e;">Classroom Song Selector</h2>
+          <span style="font-size: 11px; font-weight: 700; color: #0f766e;">Pick a piece or import your own MIDI songs</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <label class="btn btn-teal" style="padding: 8px 14px; font-size: 12px; cursor: pointer;">
+          📥 Import MIDI (.mid)
+          <input type="file" id="select-midi-input" accept=".mid,.midi" style="display:none;">
+        </label>
+        <button id="btn-select-settings" class="btn btn-slate" style="padding: 8px 12px; font-size: 14px;">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Search & Filter bar -->
+    <div style="max-width: 1100px; margin: 12px auto 0; padding: 0 24px; width: 100%; display: flex; gap: 12px; align-items: center;">
+      <input
+        type="text"
+        id="song-search-input"
+        placeholder="Search songs, composers, or tags..."
+        style="flex: 1; padding: 10px 16px; border-radius: 14px; border: 1px solid #99f6e4; font-family: inherit; font-size: 13px; font-weight: 700; background: white;"
+      >
+      <div id="filter-tabs" style="display: flex; gap: 6px;">
+        <button class="btn btn-slate" data-filter="all" style="padding: 6px 12px; font-size: 12px;">All</button>
+        <button class="btn btn-slate" data-filter="easy" style="padding: 6px 12px; font-size: 12px;">Easy</button>
+        <button class="btn btn-slate" data-filter="fast" style="padding: 6px 12px; font-size: 12px;">⚡ Fast</button>
+        <button class="btn btn-slate" data-filter="custom" style="padding: 6px 12px; font-size: 12px;">MIDI/Custom</button>
+      </div>
+    </div>
+
+    <main class="select-body">
+      <div class="song-grid" id="song-cards-container">
+        <!-- populated by js -->
+      </div>
+    </main>
+  </div>
+
+  <!-- 3. RHYTHM HIGHWAY PLAYER SCREEN -->
+  <div id="player-screen" class="screen">
+    <!-- Top transport header -->
+    <header class="player-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button id="btn-player-home" class="btn btn-amber" style="padding: 6px 12px; font-size: 14px;" title="Back to Home">
+          🦁 <span>Home</span>
+        </button>
+        <div>
+          <h2 id="player-song-title" style="font-size: 14px; font-weight: 900; color: #042f2e;">Ode to Joy</h2>
+          <button id="btn-player-change-song" style="background: none; border: none; font-size: 11px; font-weight: 800; color: #0f766e; cursor: pointer;">
+            Switch Song ▾
+          </button>
+        </div>
+      </div>
+
+      <!-- Live measure & beat -->
+      <div style="display: flex; align-items: center; gap: 12px; background: #f0fdfa; padding: 4px 12px; border-radius: 14px; border: 1px solid #ccfbf1;">
+        <div style="text-align: center;">
+          <div style="font-size: 9px; font-weight: 800; color: #0f766e; text-transform: uppercase;">Measure</div>
+          <div id="readout-measure" style="font-size: 15px; font-weight: 900; color: #134e4a;">1 / 16</div>
+        </div>
+        <div style="width: 1px; height: 20px; background: #99f6e4;"></div>
+        <div style="text-align: center;">
+          <div style="font-size: 9px; font-weight: 800; color: #0f766e; text-transform: uppercase;">Beat</div>
+          <div id="readout-beat" style="font-size: 15px; font-weight: 900; color: #134e4a;">1.1</div>
+        </div>
+      </div>
+
+      <!-- Quick Tempo Presets + BPM Controls (Up to 240 BPM!) -->
+      <div class="tempo-group" style="display: flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 8px; border-radius: 12px; border: 1px solid #cbd5e1;">
+        <button onclick="setBpm(65)">🐢 65</button>
+        <button onclick="setBpm(96)">🚶 96</button>
+        <button onclick="setBpm(132)">🐆 132</button>
+        <button onclick="setBpm(165)">⚡ 165</button>
+        <button onclick="setBpm(210)">🚀 210</button>
+        <div style="width: 1px; height: 18px; background: #cbd5e1; margin: 0 4px;"></div>
+        <span style="font-size: 11px; font-weight: 800; color: #475569;">BPM</span>
+        <input type="range" id="bpm-slider" min="40" max="240" value="96" style="width: 60px;">
+        <span id="bpm-readout" style="font-size: 12px; font-weight: 900; width: 26px;">96</span>
+      </div>
+
+      <!-- Controls -->
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <button id="btn-play-pause" class="btn btn-emerald" style="padding: 7px 14px; font-size: 13px;">
+          ▶ Play
+        </button>
+        <button id="btn-restart" class="btn btn-slate" style="padding: 7px 10px; font-size: 13px;" title="Restart Song">
+          ↺
+        </button>
+        <button id="btn-player-settings" class="btn btn-slate" style="padding: 7px 10px; font-size: 13px;" title="Teacher Settings">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Rhythm Stage Highway -->
+    <div class="highway-stage" id="highway-stage">
+      <!-- 8 Lanes -->
+      <div class="lane-col" data-lane="0"></div>
+      <div class="lane-col" data-lane="1"></div>
+      <div class="lane-col" data-lane="2"></div>
+      <div class="lane-col" data-lane="3"></div>
+      <div class="lane-col" data-lane="4"></div>
+      <div class="lane-col" data-lane="5"></div>
+      <div class="lane-col" data-lane="6"></div>
+      <div class="lane-col" data-lane="7"></div>
+
+      <!-- Strike line & label -->
+      <div class="strike-label">🎯 STRIKE HERE | PLAY ON THE LINE</div>
+      <div class="strike-bar" id="strike-bar"></div>
+    </div>
+
+    <!-- Bottom Animal Mascot Dock -->
+    <footer class="animal-dock" id="animal-dock">
+      <!-- 8 animal characters populated by js -->
+    </footer>
+  </div>
+
+  <!-- 4. TEACHER SETTINGS MODAL -->
+  <div id="modal-settings" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 24px;">⚙️</span>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 900; color: #042f2e;">Classroom & Teacher Options</h3>
+            <p style="font-size: 11px; font-weight: 700; color: #0f766e;">Notation style, backing track volume & table mute matrix</p>
+          </div>
+        </div>
+        <button id="btn-close-settings" style="background:none; border:none; font-size: 18px; cursor: pointer; color: #94a3b8;">✕</button>
+      </div>
+
+      <!-- Tube Notation Style -->
+      <div style="margin-bottom: 16px;">
+        <label style="font-size: 12px; font-weight: 800; color: #334155; display: block; margin-bottom: 6px;">Boomwhacker Tube Notation</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="btn btn-slate notation-opt" data-style="pitch" style="padding: 8px; font-size: 12px;">Pitch (C, D, E...)</button>
+          <button class="btn btn-slate notation-opt" data-style="solfege" style="padding: 8px; font-size: 12px;">Solfège (Do, Re...)</button>
+          <button class="btn btn-slate notation-opt" data-style="numbers" style="padding: 8px; font-size: 12px;">Numbers (1, 2, 3...)</button>
+          <button class="btn btn-slate notation-opt" data-style="blank" style="padding: 8px; font-size: 12px;">Colors Only</button>
+        </div>
+      </div>
+
+      <!-- Accompaniment Backing Track Toggle & Volume -->
+      <div style="background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 16px; padding: 12px; margin-bottom: 16px;">
+        <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 8px;">
+          <div>
+            <span style="font-size: 13px; font-weight: 800; color: #134e4a;">🎵 Musical Accompaniment Backing Track</span>
+            <p style="font-size: 11px; font-weight: 600; color: #0f766e;">Basslines, chords, and rhythmic pulse</p>
+          </div>
+          <input type="checkbox" id="chk-accompaniment" checked style="width: 18px; height: 18px; cursor: pointer;">
+        </label>
+        <div id="acc-vol-box" style="display: flex; align-items: center; gap: 8px; padding-top: 6px; border-top: 1px solid #99f6e4;">
+          <span style="font-size: 11px; font-weight: 800; color: #134e4a;">Volume</span>
+          <input type="range" id="rng-acc-vol" min="0" max="1" step="0.05" value="0.75" style="flex:1;">
+          <span id="txt-acc-vol" style="font-size: 11px; font-weight: 900; color: #134e4a; width: 32px;">75%</span>
+        </div>
+      </div>
+
+      <!-- Metronome Click -->
+      <label style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 10px 14px; margin-bottom: 16px; cursor: pointer;">
+        <div>
+          <span style="font-size: 12px; font-weight: 800; color: #1e293b;">Audible Metronome Click</span>
+          <p style="font-size: 10px; font-weight: 600; color: #64748b;">Click on every beat with high bell on downbeats</p>
+        </div>
+        <input type="checkbox" id="chk-metronome" style="width: 18px; height: 18px; cursor: pointer;">
+      </label>
+
+      <!-- Table Groups Mute Matrix -->
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 12px; font-weight: 800; color: #1e293b;">Table Groups Mute Matrix</span>
+          <div style="display: flex; gap: 4px;">
+            <button onclick="unmuteAll()" style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1; background:white; cursor:pointer;">All Active</button>
+            <button onclick="muteAll()" style="font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #fecdd3; background:#fff1f2; color:#be123c; cursor:pointer;">Mute All</button>
+          </div>
+        </div>
+        <div id="settings-mute-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+          <!-- 8 mute buttons populated by js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CELEBRATION MODAL -->
+  <div id="modal-celebration" class="modal-overlay">
+    <div class="modal-card" style="text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 8px;">🦁🎉</div>
+      <h2 style="font-size: 22px; font-weight: 900; color: #0f172a; margin-bottom: 4px;">Song Complete!</h2>
+      <p style="font-size: 13px; font-weight: 700; color: #0f766e; margin-bottom: 16px;">Great Job Ensemble!</p>
+      
+      <div style="font-size: 28px; margin-bottom: 16px;">⭐⭐⭐</div>
+
+      <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 20px;">
+        <div style="background: #f0fdfa; padding: 8px 14px; border-radius: 12px; border: 1px solid #ccfbf1;">
+          <div style="font-size: 10px; font-weight: 800; color: #0f766e;">NOTES</div>
+          <div id="modal-notes" style="font-size: 16px; font-weight: 900;">32</div>
+        </div>
+        <div style="background: #f0fdfa; padding: 8px 14px; border-radius: 12px; border: 1px solid #ccfbf1;">
+          <div style="font-size: 10px; font-weight: 800; color: #0f766e;">MEASURES</div>
+          <div id="modal-measures" style="font-size: 16px; font-weight: 900;">16</div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="btn-modal-replay" class="btn btn-emerald" style="padding: 12px; font-size: 14px;">
+          ↺ Play Again
+        </button>
+        <button id="btn-modal-songs" class="btn btn-slate" style="padding: 10px; font-size: 13px;">
+          📚 Browse Song Selector
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================
+       1. DATA STRUCTURES & 8 BOOMWHACKER NOTES (Diatonic C Major)
+       ========================================================== */
+    const BOOMWHACKER_NOTES = [
+      { lane: 0, pitch: 'C', solfege: 'Do', number: '1', color: '#C5222F', animalName: 'Red Fox', freq: 261.63 },
+      { lane: 1, pitch: 'D', solfege: 'Re', number: '2', color: '#E06034', animalName: 'Orange Duck', freq: 293.66 },
+      { lane: 2, pitch: 'E', solfege: 'Mi', number: '3', color: '#F3CB55', animalName: 'Yellow Elephant', freq: 329.63 },
+      { lane: 3, pitch: 'F', solfege: 'Fa', number: '4', color: '#A6D04E', animalName: 'Green Fish', freq: 349.23 },
+      { lane: 4, pitch: 'G', solfege: 'Sol', number: '5', color: '#4B8566', animalName: 'Tall Giraffe', freq: 392.00 },
+      { lane: 5, pitch: 'A', solfege: 'La', number: '6', color: '#3B2D6B', animalName: 'Alligator Head', freq: 440.00 },
+      { lane: 6, pitch: 'B', solfege: 'Ti', number: '7', color: '#BE2A6E', animalName: 'Pink Bear', freq: 493.88 },
+      { lane: 7, pitch: "C'", solfege: "Do'", number: '8', color: '#8B1115', animalName: 'Crimson Ape', freq: 523.25 }
+    ];
+
+    /* Animal SVGs (Note 6 is the custom Alligator Head!) */
+    function getAnimalSvg(lane) {
+      switch (lane) {
+        case 0:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><polygon points="25,25 35,50 15,45" fill="#C5222F"/><polygon points="75,25 85,45 65,50" fill="#C5222F"/><circle cx="50" cy="55" r="30" fill="#C5222F"/><polygon points="35,65 65,65 50,80" fill="white"/><circle cx="42" cy="50" r="4" fill="black"/><circle cx="58" cy="50" r="4" fill="black"/><circle cx="50" cy="70" r="3" fill="black"/></svg>`;
+        case 1:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><ellipse cx="50" cy="55" rx="26" ry="24" fill="#E06034"/><ellipse cx="50" cy="64" rx="18" ry="8" fill="#f97316"/><circle cx="40" cy="46" r="4" fill="black"/><circle cx="60" cy="46" r="4" fill="black"/></svg>`;
+        case 2:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><circle cx="28" cy="45" r="16" fill="#F3CB55"/><circle cx="72" cy="45" r="16" fill="#F3CB55"/><circle cx="50" cy="55" r="26" fill="#F3CB55"/><path d="M50,56 Q50,85 64,80" fill="none" stroke="#F3CB55" stroke-width="7" stroke-linecap="round"/><circle cx="42" cy="48" r="3.5" fill="black"/><circle cx="58" cy="48" r="3.5" fill="black"/></svg>`;
+        case 3:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><ellipse cx="50" cy="55" rx="30" ry="20" fill="#A6D04E"/><polygon points="15,55 5,42 5,68" fill="#A6D04E"/><circle cx="64" cy="50" r="4" fill="black"/></svg>`;
+        case 4:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><rect x="42" y="45" width="16" height="45" rx="6" fill="#4B8566"/><circle cx="50" cy="40" r="18" fill="#4B8566"/><line x1="43" y1="26" x2="40" y2="18" stroke="#4B8566" stroke-width="3"/><circle cx="40" cy="18" r="3" fill="#2d523e"/><line x1="57" y1="26" x2="60" y2="18" stroke="#4B8566" stroke-width="3"/><circle cx="60" cy="18" r="3" fill="#2d523e"/><circle cx="44" cy="38" r="3.5" fill="black"/><circle cx="56" cy="38" r="3.5" fill="black"/></svg>`;
+        case 5:
+          /* NOTE 6: ALLIGATOR HEAD */
+          return `<svg viewBox="0 0 100 100" width="60" height="60"><path d="M25,82 C22,65 32,48 44,46 C48,46 52,50 60,50 C68,50 72,46 76,46 C88,48 98,65 95,82 L90,105 C85,115 35,115 30,105 Z" fill="#3B2D6B" stroke="#251B47" stroke-width="2"/><circle cx="42" cy="45" fill="#4a3984" r="11"/><circle cx="78" cy="45" fill="#4a3984" r="11"/><circle cx="42" cy="45" fill="white" r="7"/><circle cx="43" cy="45" fill="#111" r="3.5"/><circle cx="78" cy="45" fill="white" r="7"/><circle cx="77" cy="45" fill="#111" r="3.5"/><path d="M28,78 C28,68 36,65 60,65 C84,65 92,68 92,78 C92,90 85,98 60,98 C35,98 28,90 28,78 Z" fill="#4a3984"/><ellipse cx="48" cy="72" rx="2" ry="2.5" fill="#1e1438"/><ellipse cx="72" cy="72" rx="2" ry="2.5" fill="#1e1438"/><path d="M34,84 Q 60,90 86,84" fill="none" stroke="#20153d" stroke-width="2.5"/><polygon points="40,85 44,91 48,85" fill="white"/><polygon points="54,86 58,92 62,86" fill="white"/><polygon points="68,85 72,91 76,85" fill="white"/></svg>`;
+        case 6:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><circle cx="28" cy="35" r="12" fill="#BE2A6E"/><circle cx="72" cy="35" r="12" fill="#BE2A6E"/><circle cx="50" cy="55" r="28" fill="#BE2A6E"/><ellipse cx="50" cy="62" rx="12" ry="8" fill="#f472b6"/><circle cx="42" cy="50" r="3.5" fill="black"/><circle cx="58" cy="50" r="3.5" fill="black"/></svg>`;
+        case 7:
+        default:
+          return `<svg viewBox="0 0 100 100" width="56" height="56"><circle cx="50" cy="52" r="30" fill="#8B1115"/><ellipse cx="50" cy="62" rx="18" ry="12" fill="#4c0519"/><circle cx="42" cy="48" r="3.5" fill="black"/><circle cx="58" cy="48" r="3.5" fill="black"/></svg>`;
+      }
+    }
+
+    /* Helper: create basic chord accompaniment events */
+    function generateAccompaniment(progression, totalMeasures) {
+      const chords = {
+        C: { bass: 36, notes: [48, 52, 55, 60] },
+        G: { bass: 43, notes: [47, 50, 55, 59] },
+        F: { bass: 41, notes: [45, 48, 53, 57] },
+        Am: { bass: 45, notes: [45, 48, 52, 57] },
+        Dm: { bass: 38, notes: [45, 48, 53, 57] },
+        Em: { bass: 40, notes: [47, 52, 55, 59] }
+      };
+
+      const events = [];
+      for (let m = 0; m < totalMeasures; m++) {
+        const chordName = progression[m % progression.length] || 'C';
+        const chord = chords[chordName] || chords['C'];
+        const beatBase = m * 4;
+
+        // Downbeat bass note
+        events.push({ beat: beatBase, midi: chord.bass, dur: 2, type: 'bass' });
+        // Beat 3 bass pulse
+        events.push({ beat: beatBase + 2, midi: chord.bass + 7, dur: 1.5, type: 'bass' });
+
+        // Chords on beats 1 and 3 (or 2 and 4)
+        chord.notes.forEach(note => {
+          events.push({ beat: beatBase + 1, midi: note, dur: 0.8, type: 'chord' });
+          events.push({ beat: beatBase + 3, midi: note, dur: 0.8, type: 'chord' });
+        });
+
+        // Soft percussion on downbeat
+        events.push({ beat: beatBase, midi: 36, dur: 0.2, type: 'percussion' });
+        events.push({ beat: beatBase + 2, midi: 38, dur: 0.2, type: 'percussion' });
+      }
+      return events;
+    }
+
+    const SONGS = [
+      {
+        id: 'ode-to-joy',
+        title: 'Ode to Joy',
+        subtitle: 'Ludwig van Beethoven',
+        difficulty: 'Easy',
+        bpm: 96,
+        totalMeasures: 16,
+        notes: [
+          { beat: 0, lane: 2, dur: 1 }, { beat: 1, lane: 2, dur: 1 }, { beat: 2, lane: 3, dur: 1 }, { beat: 3, lane: 4, dur: 1 },
+          { beat: 4, lane: 4, dur: 1 }, { beat: 5, lane: 3, dur: 1 }, { beat: 6, lane: 2, dur: 1 }, { beat: 7, lane: 1, dur: 1 },
+          { beat: 8, lane: 0, dur: 1 }, { beat: 9, lane: 0, dur: 1 }, { beat: 10, lane: 1, dur: 1 }, { beat: 11, lane: 2, dur: 1 },
+          { beat: 12, lane: 2, dur: 1.5 }, { beat: 14, lane: 1, dur: 0.5 }, { beat: 15, lane: 1, dur: 2 },
+          { beat: 16, lane: 2, dur: 1 }, { beat: 17, lane: 2, dur: 1 }, { beat: 18, lane: 3, dur: 1 }, { beat: 19, lane: 4, dur: 1 },
+          { beat: 20, lane: 4, dur: 1 }, { beat: 21, lane: 3, dur: 1 }, { beat: 22, lane: 2, dur: 1 }, { beat: 23, lane: 1, dur: 1 },
+          { beat: 24, lane: 0, dur: 1 }, { beat: 25, lane: 0, dur: 1 }, { beat: 26, lane: 1, dur: 1 }, { beat: 27, lane: 2, dur: 1 },
+          { beat: 28, lane: 1, dur: 1.5 }, { beat: 30, lane: 0, dur: 0.5 }, { beat: 31, lane: 0, dur: 2 }
+        ],
+        accompaniment: generateAccompaniment(['C', 'C', 'G', 'G', 'C', 'C', 'G', 'C', 'C', 'C', 'G', 'G', 'C', 'C', 'G', 'C'], 16)
+      },
+      {
+        id: 'twinkle',
+        title: 'Twinkle Twinkle Little Star',
+        subtitle: 'Traditional Nursery Melody',
+        difficulty: 'Easy',
+        bpm: 90,
+        totalMeasures: 12,
+        notes: [
+          { beat: 0, lane: 0, dur: 1 }, { beat: 1, lane: 0, dur: 1 }, { beat: 2, lane: 4, dur: 1 }, { beat: 3, lane: 4, dur: 1 },
+          { beat: 4, lane: 5, dur: 1 }, { beat: 5, lane: 5, dur: 1 }, { beat: 6, lane: 4, dur: 2 },
+          { beat: 8, lane: 3, dur: 1 }, { beat: 9, lane: 3, dur: 1 }, { beat: 10, lane: 2, dur: 1 }, { beat: 11, lane: 2, dur: 1 },
+          { beat: 12, lane: 1, dur: 1 }, { beat: 13, lane: 1, dur: 1 }, { beat: 14, lane: 0, dur: 2 }
+        ],
+        accompaniment: generateAccompaniment(['C', 'F', 'C', 'G', 'F', 'C', 'G', 'C', 'C', 'F', 'C', 'G'], 12)
+      },
+      {
+        id: 'frere-jacques',
+        title: 'Frère Jacques',
+        subtitle: 'French Traditional Canon',
+        difficulty: 'Easy',
+        bpm: 100,
+        totalMeasures: 8,
+        notes: [
+          { beat: 0, lane: 0, dur: 1 }, { beat: 1, lane: 1, dur: 1 }, { beat: 2, lane: 2, dur: 1 }, { beat: 3, lane: 0, dur: 1 },
+          { beat: 4, lane: 0, dur: 1 }, { beat: 5, lane: 1, dur: 1 }, { beat: 6, lane: 2, dur: 1 }, { beat: 7, lane: 0, dur: 1 },
+          { beat: 8, lane: 2, dur: 1 }, { beat: 9, lane: 3, dur: 1 }, { beat: 10, lane: 4, dur: 2 },
+          { beat: 12, lane: 2, dur: 1 }, { beat: 13, lane: 3, dur: 1 }, { beat: 14, lane: 4, dur: 2 }
+        ],
+        accompaniment: generateAccompaniment(['C', 'C', 'C', 'C', 'C', 'C', 'G', 'C'], 8)
+      },
+      {
+        id: 'saints',
+        title: 'When the Saints Go Marching In',
+        subtitle: 'New Orleans Traditional',
+        difficulty: 'Medium',
+        bpm: 120,
+        totalMeasures: 16,
+        notes: [
+          { beat: 1, lane: 0, dur: 1 }, { beat: 2, lane: 2, dur: 1 }, { beat: 3, lane: 3, dur: 1 },
+          { beat: 4, lane: 4, dur: 3 }, { beat: 9, lane: 0, dur: 1 }, { beat: 10, lane: 2, dur: 1 }, { beat: 11, lane: 3, dur: 1 },
+          { beat: 12, lane: 4, dur: 3 }, { beat: 17, lane: 0, dur: 1 }, { beat: 18, lane: 2, dur: 1 }, { beat: 19, lane: 3, dur: 1 },
+          { beat: 20, lane: 4, dur: 2 }, { beat: 22, lane: 2, dur: 2 }, { beat: 24, lane: 0, dur: 2 }, { beat: 26, lane: 2, dur: 2 },
+          { beat: 28, lane: 1, dur: 4 }
+        ],
+        accompaniment: generateAccompaniment(['C', 'C', 'C', 'C', 'C', 'C', 'G', 'G', 'C', 'C', 'F', 'F', 'C', 'G', 'C', 'C'], 16)
+      },
+      {
+        id: 'william-tell',
+        title: 'William Tell Overture (Finale)',
+        subtitle: 'Gioachino Rossini (Sprint Gallop)',
+        difficulty: 'Fast',
+        bpm: 152,
+        totalMeasures: 16,
+        notes: [
+          { beat: 0, lane: 4, dur: 0.5 }, { beat: 0.5, lane: 4, dur: 0.5 }, { beat: 1, lane: 4, dur: 1 },
+          { beat: 2, lane: 4, dur: 0.5 }, { beat: 2.5, lane: 4, dur: 0.5 }, { beat: 3, lane: 4, dur: 1 },
+          { beat: 4, lane: 4, dur: 0.5 }, { beat: 4.5, lane: 4, dur: 0.5 }, { beat: 5, lane: 4, dur: 0.5 }, { beat: 5.5, lane: 3, dur: 0.5 },
+          { beat: 6, lane: 2, dur: 1 }, { beat: 7, lane: 0, dur: 1 },
+          { beat: 8, lane: 4, dur: 0.5 }, { beat: 8.5, lane: 4, dur: 0.5 }, { beat: 9, lane: 4, dur: 1 },
+          { beat: 10, lane: 4, dur: 0.5 }, { beat: 10.5, lane: 4, dur: 0.5 }, { beat: 11, lane: 4, dur: 1 },
+          { beat: 12, lane: 2, dur: 1 }, { beat: 13, lane: 1, dur: 1 }, { beat: 14, lane: 0, dur: 2 }
+        ],
+        accompaniment: generateAccompaniment(['C', 'C', 'G', 'C', 'C', 'C', 'G', 'C', 'C', 'C', 'G', 'C', 'C', 'G', 'C', 'C'], 16)
+      }
+    ];
+
+    let customSongs = [];
+
+    /* ==========================================================
+       2. WEB AUDIO API SYNTHESIZER (Melody + Accompaniment Engine)
+       ========================================================== */
+    class BoomwhackerAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContextClass();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+          this.masterGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      midiToFreq(midi) {
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      playNote(laneIndex, isMuted = false) {
+        if (isMuted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const meta = BOOMWHACKER_NOTES[laneIndex];
+        const now = this.ctx.currentTime;
+
+        // Tube physical model (Triangle fundamental + hollow bandpass filter)
+        const osc = this.ctx.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(meta.freq, now);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(meta.freq, now);
+        filter.Q.setValueAtTime(5.5, now);
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.55, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.start(now);
+        osc.stop(now + 0.9);
+      }
+
+      playMetronome(isDownbeat) {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(isDownbeat ? 1200 : 800, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.002);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.07);
+      }
+
+      playAccompaniment(event, volume = 0.7) {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const freq = this.midiToFreq(event.midi);
+
+        if (event.type === 'bass') {
+          // Warm Electric/Upright Bass Synth
+          const osc = this.ctx.createOscillator();
+          const filter = this.ctx.createBiquadFilter();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now);
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(260, now);
+          filter.Q.setValueAtTime(2.0, now);
+
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.4 * volume, now + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + Math.min(1.4, event.dur * 0.8));
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.masterGain);
+
+          osc.start(now);
+          osc.stop(now + 1.5);
+        } else if (event.type === 'percussion') {
+          // Soft rhythmic kick/woodblock pulse
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(30, now + 0.1);
+
+          gain.gain.setValueAtTime(0.35 * volume, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+          osc.connect(gain);
+          gain.connect(this.masterGain);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        } else {
+          // Warm chord harmony pad/marimba
+          const osc = this.ctx.createOscillator();
+          const filter = this.ctx.createBiquadFilter();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now);
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(1200, now);
+
+          gain.gain.setValueAtTime(0.001, now);
+          gain.gain.linearRampToValueAtTime(0.22 * volume, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + Math.min(1.2, event.dur * 0.9));
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.masterGain);
+
+          osc.start(now);
+          osc.stop(now + 1.3);
+        }
+      }
+    }
+
+    const audio = new BoomwhackerAudioEngine();
+
+    /* ==========================================================
+       3. PURE VANILLA JS STANDARD MIDI PARSER & C MAJOR TRANSPOSER
+       ========================================================== */
+    async function parseMidiFile(file) {
+      const buffer = await file.arrayBuffer();
+      const view = new DataView(buffer);
+      let offset = 0;
+
+      // 1. Read 'MThd' header
+      const headerStr = String.fromCharCode(view.getUint8(offset), view.getUint8(offset+1), view.getUint8(offset+2), view.getUint8(offset+3));
+      if (headerStr !== 'MThd') throw new Error('Not a valid MIDI file header');
+      offset += 4;
+      const headerLength = view.getUint32(offset); offset += 4;
+      const format = view.getUint16(offset); offset += 2;
+      const numTracks = view.getUint16(offset); offset += 2;
+      const timeDivision = view.getUint16(offset); offset += 2;
+      offset = 8 + 6; // start of tracks
+
+      const ticksPerBeat = (timeDivision & 0x8000) === 0 ? timeDivision : 480;
+
+      let rawNotes = [];
+      let detectedBpm = 120;
+
+      // Variable-length quantity decoder
+      function readVarInt() {
+        let value = 0;
+        let byte;
+        do {
+          byte = view.getUint8(offset++);
+          value = (value << 7) | (byte & 0x7F);
+        } while (byte & 0x80);
+        return value;
+      }
+
+      // Parse each MTrk
+      for (let t = 0; t < numTracks && offset < buffer.byteLength; t++) {
+        if (offset + 8 > buffer.byteLength) break;
+        const trackTag = String.fromCharCode(view.getUint8(offset), view.getUint8(offset+1), view.getUint8(offset+2), view.getUint8(offset+3));
+        offset += 4;
+        const trackLen = view.getUint32(offset); offset += 4;
+        const trackEnd = offset + trackLen;
+
+        let curTick = 0;
+        let runningStatus = 0;
+        const activeNotes = new Map();
+
+        while (offset < trackEnd && offset < buffer.byteLength) {
+          const delta = readVarInt();
+          curTick += delta;
+
+          let status = view.getUint8(offset);
+          if (status >= 0x80) {
+            runningStatus = status;
+            offset++;
+          } else {
+            status = runningStatus;
+          }
+
+          const messageType = status >> 4;
+          const channel = status & 0x0F;
+
+          if (status === 0xFF) {
+            // Meta event
+            const metaType = view.getUint8(offset++);
+            const metaLen = readVarInt();
+            if (metaType === 0x51 && metaLen === 3) {
+              const mpqn = (view.getUint8(offset) << 16) | (view.getUint8(offset+1) << 8) | view.getUint8(offset+2);
+              detectedBpm = Math.round(60000000 / mpqn);
+            }
+            offset += metaLen;
+          } else if (messageType === 0x9) {
+            // Note On
+            const midiPitch = view.getUint8(offset++);
+            const vel = view.getUint8(offset++);
+            if (vel > 0) {
+              activeNotes.set(midiPitch, { startTick: curTick, vel });
+            } else if (activeNotes.has(midiPitch)) {
+              const start = activeNotes.get(midiPitch);
+              activeNotes.delete(midiPitch);
+              rawNotes.push({
+                midi: midiPitch,
+                startBeat: start.startTick / ticksPerBeat,
+                dur: Math.max(0.25, (curTick - start.startTick) / ticksPerBeat),
+                channel
+              });
+            }
+          } else if (messageType === 0x8) {
+            // Note Off
+            const midiPitch = view.getUint8(offset++);
+            offset++; // vel
+            if (activeNotes.has(midiPitch)) {
+              const start = activeNotes.get(midiPitch);
+              activeNotes.delete(midiPitch);
+              rawNotes.push({
+                midi: midiPitch,
+                startBeat: start.startTick / ticksPerBeat,
+                dur: Math.max(0.25, (curTick - start.startTick) / ticksPerBeat),
+                channel
+              });
+            }
+          } else if (messageType === 0xC || messageType === 0xD) {
+            offset += 1;
+          } else {
+            offset += 2;
+          }
+        }
+      }
+
+      if (rawNotes.length === 0) throw new Error('No notes found in MIDI file');
+
+      // Sort notes by startBeat
+      rawNotes.sort((a, b) => a.startBeat - b.startBeat);
+
+      // Quantize and align beats
+      const firstBeat = rawNotes[0].startBeat;
+      rawNotes.forEach(n => { n.startBeat = Math.max(0, n.startBeat - firstBeat); });
+
+      // Detect best transposition shift into C Major / A Minor Diatonic Scale (pitch classes 0, 2, 4, 5, 7, 9, 11)
+      const C_MAJOR_SCALE = new Set([0, 2, 4, 5, 7, 9, 11]);
+      let bestShift = 0;
+      let highestDiatonicCount = -1;
+
+      for (let shift = -6; shift <= 6; shift++) {
+        let count = 0;
+        rawNotes.forEach(n => {
+          const pc = (n.midi + shift) % 12;
+          if (C_MAJOR_SCALE.has(pc < 0 ? pc + 12 : pc)) count++;
+        });
+        if (count > highestDiatonicCount) {
+          highestDiatonicCount = count;
+          bestShift = shift;
+        }
+      }
+
+      // Map scale degree to the 8 Boomwhacker tubes (C4 = 60 to C5 = 72)
+      const DIATONIC_PITCH_CLASSES = [0, 2, 4, 5, 7, 9, 11];
+
+      const melodyNotes = [];
+      const accompaniment = [];
+
+      rawNotes.forEach((n, idx) => {
+        const transposedMidi = n.midi + bestShift;
+        const pc = ((transposedMidi % 12) + 12) % 12;
+
+        if (n.channel !== 9 && transposedMidi >= 55) {
+          // Candidate melody note: map to 8 Boomwhacker lanes
+          let lane = DIATONIC_PITCH_CLASSES.indexOf(pc);
+          if (lane === -1) {
+            // Find closest diatonic note
+            let minDiff = 99;
+            DIATONIC_PITCH_CLASSES.forEach((dpc, lIdx) => {
+              const diff = Math.min(Math.abs(pc - dpc), 12 - Math.abs(pc - dpc));
+              if (diff < minDiff) {
+                minDiff = diff;
+                lane = lIdx;
+              }
+            });
+          }
+          if (transposedMidi >= 72) lane = 7; // high C'
+
+          melodyNotes.push({
+            id: `midi-n-${idx}`,
+            beat: Math.round(n.startBeat * 4) / 4,
+            lane: Math.max(0, Math.min(7, lane)),
+            dur: Math.round(n.dur * 4) / 4
+          });
+        }
+
+        // Bass and chord accompaniment
+        if (transposedMidi < 55) {
+          accompaniment.push({
+            beat: Math.round(n.startBeat * 4) / 4,
+            midi: transposedMidi,
+            dur: Math.max(0.5, Math.round(n.dur * 4) / 4),
+            type: 'bass'
+          });
+        } else if (n.channel === 9) {
+          accompaniment.push({
+            beat: Math.round(n.startBeat * 4) / 4,
+            midi: 36,
+            dur: 0.2,
+            type: 'percussion'
+          });
+        } else if (accompaniment.length < 200) {
+          accompaniment.push({
+            beat: Math.round(n.startBeat * 4) / 4,
+            midi: transposedMidi,
+            dur: Math.max(0.5, Math.round(n.dur * 4) / 4),
+            type: 'chord'
+          });
+        }
+      });
+
+      const maxBeat = melodyNotes.reduce((max, n) => Math.max(max, n.beat + n.dur), 16);
+      const totalMeasures = Math.max(8, Math.ceil(maxBeat / 4));
+      const songTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+
+      return {
+        id: `midi-${Date.now()}`,
+        title: songTitle.charAt(0).toUpperCase() + songTitle.slice(1),
+        subtitle: `Transposed (${bestShift >= 0 ? '+' : ''}${bestShift} st) to C Major`,
+        difficulty: detectedBpm > 130 ? 'Fast' : 'Medium',
+        bpm: Math.min(240, Math.max(50, detectedBpm)),
+        totalMeasures,
+        notes: melodyNotes,
+        accompaniment: accompaniment.slice(0, 300)
+      };
+    }
+
+    /* ==========================================================
+       4. APPLICATION STATE & TEACHER SETTINGS
+       ========================================================== */
+    let currentScreen = 'home';
+    let currentSong = SONGS[0];
+    let isPlaying = false;
+    let bpm = currentSong.bpm;
+    let currentBeat = -4; // 4-beat count-in
+    let songNotes = [];
+    let songAccompaniment = [];
+    let animFrame = null;
+    let lastTime = null;
+    let lastMetronomeBeat = -1;
+    let auditionTimer = null;
+
+    const teacherSettings = {
+      notationStyle: 'pitch',
+      accompanimentEnabled: true,
+      accompanimentVolume: 0.75,
+      metronome: false,
+      mutedLanes: new Array(8).fill(false)
+    };
+
+    function showToast(text) {
+      const el = document.getElementById('toast-msg');
+      document.getElementById('toast-text').textContent = text;
+      el.style.display = 'flex';
+      setTimeout(() => { el.style.display = 'none'; }, 6000);
+    }
+    function hideToast() {
+      document.getElementById('toast-msg').style.display = 'none';
+    }
+
+    function setScreen(screenName) {
+      currentScreen = screenName;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const activeEl = document.getElementById(screenName + '-screen');
+      if (activeEl) activeEl.classList.add('active');
+
+      if (screenName !== 'player') {
+        isPlaying = false;
+        updatePlayBtn();
+      }
+    }
+
+    function setBpm(newBpm) {
+      bpm = Math.min(240, Math.max(40, newBpm));
+      document.getElementById('bpm-slider').value = bpm;
+      document.getElementById('bpm-readout').textContent = bpm;
+      updateTempoPresetButtons();
+    }
+
+    function updateTempoPresetButtons() {
+      document.querySelectorAll('.tempo-group button').forEach(b => {
+        const val = parseInt(b.textContent.replace(/[^0-9]/g, ''));
+        if (Math.abs(val - bpm) <= 10) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+
+    /* Get tube label according to teacher settings */
+    function getTubeLabel(lane) {
+      const meta = BOOMWHACKER_NOTES[lane];
+      switch (teacherSettings.notationStyle) {
+        case 'solfege': return meta.solfege;
+        case 'numbers': return meta.number;
+        case 'blank': return '';
+        case 'pitch':
+        default: return meta.pitch;
+      }
+    }
+
+    /* Initialize UI Elements */
+    function initUI() {
+      // Home pill buttons
+      const pillsContainer = document.getElementById('home-tube-pills');
+      pillsContainer.innerHTML = '';
+      BOOMWHACKER_NOTES.forEach(meta => {
+        const btn = document.createElement('button');
+        btn.className = 'color-tube-pill';
+        btn.style.backgroundColor = meta.color;
+        btn.innerHTML = `<span style="font-size:12px; font-weight:900;">${meta.pitch}</span><span style="font-size:8px; opacity:0.8;">${meta.number}</span>`;
+        btn.title = `${meta.pitch} (${meta.solfege}) - ${meta.animalName}`;
+        btn.onclick = () => {
+          audio.playNote(meta.lane, teacherSettings.mutedLanes[meta.lane]);
+          triggerAnimalBounce(meta.lane);
+        };
+        pillsContainer.appendChild(btn);
+      });
+
+      // Soundcheck grid
+      const soundcheckContainer = document.getElementById('home-soundcheck-grid');
+      soundcheckContainer.innerHTML = '';
+      BOOMWHACKER_NOTES.forEach(meta => {
+        const btn = document.createElement('button');
+        btn.className = 'soundcheck-btn';
+        btn.id = `sc-btn-${meta.lane}`;
+        btn.innerHTML = `
+          <span style="width: 10px; height: 10px; border-radius: 50%; background: ${meta.color};"></span>
+          <span style="font-size: 13px; font-weight: 900; color: #1e293b;">${meta.pitch}</span>
+          <span style="font-size: 10px; font-weight: 700; color: #64748b;">${meta.solfege}</span>
+          <span style="font-size: 9px; background: white; padding: 1px 4px; border-radius: 4px; border: 1px solid #e2e8f0; color: #0f766e; font-weight: 800;">Key ${meta.number}</span>
+        `;
+        btn.onclick = () => {
+          audio.playNote(meta.lane, teacherSettings.mutedLanes[meta.lane]);
+          triggerAnimalBounce(meta.lane);
+          document.getElementById('soundcheck-last').textContent = `Struck: ${meta.pitch} (${meta.solfege}) - ${meta.animalName}`;
+          btn.classList.add('bouncing');
+          setTimeout(() => btn.classList.remove('bouncing'), 200);
+        };
+        soundcheckContainer.appendChild(btn);
+      });
+
+      // Animal Dock in Player
+      const dock = document.getElementById('animal-dock');
+      dock.innerHTML = '';
+      BOOMWHACKER_NOTES.forEach(meta => {
+        const cell = document.createElement('div');
+        cell.className = 'dock-cell';
+        cell.id = `dock-cell-${meta.lane}`;
+        if (teacherSettings.mutedLanes[meta.lane]) cell.classList.add('muted');
+        cell.innerHTML = `
+          ${getAnimalSvg(meta.lane)}
+          <div class="dock-badge" id="badge-${meta.lane}" style="background-color: ${meta.color};">
+            ${getTubeLabel(meta.lane)}
+          </div>
+        `;
+        cell.onclick = () => {
+          audio.playNote(meta.lane, teacherSettings.mutedLanes[meta.lane]);
+          triggerAnimalBounce(meta.lane);
+        };
+        dock.appendChild(cell);
+      });
+
+      // Settings Mute Grid
+      const muteGrid = document.getElementById('settings-mute-grid');
+      muteGrid.innerHTML = '';
+      BOOMWHACKER_NOTES.forEach(meta => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-slate';
+        btn.id = `mute-btn-${meta.lane}`;
+        btn.style.padding = '8px 4px';
+        btn.style.fontSize = '11px';
+        btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${meta.color}; margin-right:4px;"></span>${meta.pitch} 🔊`;
+        btn.onclick = () => toggleLaneMute(meta.lane);
+        muteGrid.appendChild(btn);
+      });
+
+      renderSongCards();
+    }
+
+    function renderSongCards() {
+      const songGrid = document.getElementById('song-cards-container');
+      songGrid.innerHTML = '';
+
+      const all = [...SONGS, ...customSongs];
+      const filter = document.getElementById('song-search-input').value.toLowerCase();
+
+      all.forEach(song => {
+        if (filter && !song.title.toLowerCase().includes(filter) && !song.subtitle.toLowerCase().includes(filter)) return;
+
+        const hasAcc = song.accompaniment && song.accompaniment.length > 0;
+        const card = document.createElement('div');
+        card.className = 'song-card';
+        card.innerHTML = `
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items:center; margin-bottom: 8px;">
+              <div style="display:flex; gap: 6px; align-items:center;">
+                <span style="font-size: 10px; font-weight: 900; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 20px;">${song.difficulty}</span>
+                ${hasAcc ? '<span style="font-size: 10px; font-weight: 800; background: #ccfbf1; color: #0f766e; padding: 2px 8px; border-radius: 12px;">🎵 Backing Track</span>' : ''}
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: #64748b;">⏱️ ${song.bpm} BPM</span>
+            </div>
+            <h3 style="font-size: 17px; font-weight: 900; color: #0f172a; margin-bottom: 2px;">${song.title}</h3>
+            <p style="font-size: 12px; font-weight: 700; color: #0f766e; margin-bottom: 12px;">${song.subtitle}</p>
+            
+            <div style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 6px;">
+              Tubes Needed (${song.notes.length} notes • ${song.totalMeasures} measures):
+            </div>
+            <div style="display: flex; gap: 4px; margin-bottom: 16px;">
+              ${BOOMWHACKER_NOTES.map(m => {
+                const used = song.notes.some(n => n.lane === m.lane);
+                return `<div style="width: 22px; height: 22px; border-radius: 6px; background: ${m.color}; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: 900; opacity: ${used ? 1 : 0.2};">${m.pitch}</div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-slate" style="padding: 10px; font-size: 12px;" onclick="auditionSong('${song.id}')" title="Preview hook & accompaniment">
+              🔊 Audition
+            </button>
+            <button class="btn btn-emerald" style="flex:1; padding: 10px; font-size: 13px;" onclick="loadAndStartSong('${song.id}')">
+              ▶ Start Play-Along
+            </button>
+          </div>
+        `;
+        songGrid.appendChild(card);
+      });
+    }
+
+    function auditionSong(songId) {
+      const all = [...SONGS, ...customSongs];
+      const s = all.find(item => item.id === songId);
+      if (!s) return;
+
+      audio.init();
+      if (auditionTimer) clearTimeout(auditionTimer);
+
+      const sampleNotes = s.notes.slice(0, 10);
+      const sampleAcc = (s.accompaniment || []).slice(0, 14);
+      const beatMs = (60 / s.bpm) * 1000;
+
+      sampleNotes.forEach(note => {
+        setTimeout(() => {
+          audio.playNote(note.lane);
+          triggerAnimalBounce(note.lane);
+        }, note.beat * beatMs);
+      });
+
+      if (teacherSettings.accompanimentEnabled) {
+        sampleAcc.forEach(acc => {
+          setTimeout(() => {
+            audio.playAccompaniment(acc, teacherSettings.accompanimentVolume * 0.7);
+          }, acc.beat * beatMs);
+        });
+      }
+    }
+
+    function triggerAnimalBounce(lane) {
+      const cell = document.getElementById(`dock-cell-${lane}`);
+      if (cell) {
+        cell.classList.remove('bouncing');
+        void cell.offsetWidth;
+        cell.classList.add('bouncing');
+      }
+    }
+
+    /* Start / Load Song */
+    window.loadAndStartSong = function(songId) {
+      const all = [...SONGS, ...customSongs];
+      const s = all.find(item => item.id === songId);
+      if (!s) return;
+      currentSong = s;
+      bpm = s.bpm;
+      setBpm(bpm);
+      document.getElementById('player-song-title').textContent = s.title;
+
+      songNotes = s.notes.map(n => ({ ...n, played: false }));
+      songAccompaniment = (s.accompaniment || []).map(a => ({ ...a, played: false }));
+      currentBeat = -4; // 4 count-in beats
+      lastMetronomeBeat = -1;
+      isPlaying = true;
+      updatePlayBtn();
+      setScreen('player');
+    };
+
+    function updatePlayBtn() {
+      const btn = document.getElementById('btn-play-pause');
+      btn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+    }
+
+    /* Animation Loop (Highway visual play-along + Accompaniment execution) */
+    function gameLoop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+
+      if (isPlaying) {
+        const bps = bpm / 60;
+        currentBeat += bps * dt;
+
+        // Metronome click on beat
+        if (teacherSettings.metronome && Math.floor(currentBeat) > lastMetronomeBeat && currentBeat >= 0) {
+          lastMetronomeBeat = Math.floor(currentBeat);
+          const isDownbeat = Math.floor(currentBeat) % 4 === 0;
+          audio.playMetronome(isDownbeat);
+        }
+
+        // Update readouts
+        const safeBeat = Math.max(0, currentBeat);
+        const curMeasure = Math.min(currentSong.totalMeasures, Math.floor(safeBeat / 4) + 1);
+        const beatInMeasure = (Math.floor(safeBeat) % 4) + 1;
+        document.getElementById('readout-measure').textContent = `${curMeasure} / ${currentSong.totalMeasures}`;
+        document.getElementById('readout-beat').textContent = currentBeat < 0 ? `-${Math.ceil(Math.abs(currentBeat))}` : `${curMeasure}.${beatInMeasure}`;
+
+        // Auto trigger melody notes crossing the line
+        songNotes.forEach(note => {
+          const diff = note.beat - currentBeat;
+          if (!note.played && diff <= 0.05 && diff >= -0.3) {
+            note.played = true;
+            audio.playNote(note.lane, teacherSettings.mutedLanes[note.lane]);
+            triggerAnimalBounce(note.lane);
+          }
+        });
+
+        // Trigger accompaniment backing track events
+        if (teacherSettings.accompanimentEnabled && songAccompaniment.length > 0) {
+          songAccompaniment.forEach(acc => {
+            const diff = acc.beat - currentBeat;
+            if (!acc.played && diff <= 0.05 && diff >= -0.3) {
+              acc.played = true;
+              audio.playAccompaniment(acc, teacherSettings.accompanimentVolume);
+            }
+          });
+        }
+
+        // Check for song completion
+        if (currentBeat >= currentSong.totalMeasures * 4 + 1.5) {
+          isPlaying = false;
+          updatePlayBtn();
+          showCelebrationModal();
+        }
+      }
+
+      // Render falling notes on highway
+      renderNotes();
+
+      animFrame = requestAnimationFrame(gameLoop);
+    }
+
+    function renderNotes() {
+      const stage = document.getElementById('highway-stage');
+      const stageHeight = stage.clientHeight;
+      const strikeY = stageHeight - 24;
+
+      const lookahead = 5.5; // beats visible
+
+      // Remove existing note pills
+      stage.querySelectorAll('.note-pill').forEach(el => el.remove());
+
+      songNotes.forEach(note => {
+        const beatDiff = note.beat - currentBeat;
+        if (beatDiff > -1 && beatDiff <= lookahead) {
+          const progress = 1 - (beatDiff / lookahead);
+          const topY = progress * strikeY - 24;
+
+          const laneEl = stage.querySelector(`.lane-col[data-lane="${note.lane}"]`);
+          if (laneEl) {
+            const meta = BOOMWHACKER_NOTES[note.lane];
+            const pill = document.createElement('div');
+            pill.className = 'note-pill';
+            pill.style.backgroundColor = meta.color;
+            pill.style.top = `${topY}px`;
+            pill.textContent = getTubeLabel(note.lane);
+            laneEl.appendChild(pill);
+          }
+        }
+      });
+    }
+
+    function showCelebrationModal() {
+      document.getElementById('modal-notes').textContent = currentSong.notes.length;
+      document.getElementById('modal-measures').textContent = currentSong.totalMeasures;
+      document.getElementById('modal-celebration').classList.add('active');
+    }
+
+    /* Mute Matrix */
+    function toggleLaneMute(lane) {
+      teacherSettings.mutedLanes[lane] = !teacherSettings.mutedLanes[lane];
+      const btn = document.getElementById(`mute-btn-${lane}`);
+      const dockCell = document.getElementById(`dock-cell-${lane}`);
+      if (teacherSettings.mutedLanes[lane]) {
+        btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${BOOMWHACKER_NOTES[lane].color}; margin-right:4px;"></span>${BOOMWHACKER_NOTES[lane].pitch} 🔇`;
+        btn.style.color = '#be123c';
+        dockCell.classList.add('muted');
+      } else {
+        btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${BOOMWHACKER_NOTES[lane].color}; margin-right:4px;"></span>${BOOMWHACKER_NOTES[lane].pitch} 🔊`;
+        btn.style.color = '#334155';
+        dockCell.classList.remove('muted');
+      }
+    }
+
+    function muteAll() {
+      for (let i = 0; i < 8; i++) {
+        teacherSettings.mutedLanes[i] = true;
+        const btn = document.getElementById(`mute-btn-${i}`);
+        if (btn) btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${BOOMWHACKER_NOTES[i].color}; margin-right:4px;"></span>${BOOMWHACKER_NOTES[i].pitch} 🔇`;
+        const dockCell = document.getElementById(`dock-cell-${i}`);
+        if (dockCell) dockCell.classList.add('muted');
+      }
+    }
+
+    function unmuteAll() {
+      for (let i = 0; i < 8; i++) {
+        teacherSettings.mutedLanes[i] = false;
+        const btn = document.getElementById(`mute-btn-${i}`);
+        if (btn) btn.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${BOOMWHACKER_NOTES[i].color}; margin-right:4px;"></span>${BOOMWHACKER_NOTES[i].pitch} 🔊`;
+        const dockCell = document.getElementById(`dock-cell-${i}`);
+        if (dockCell) dockCell.classList.remove('muted');
+      }
+    }
+
+    /* MIDI File Upload Handler */
+    async function handleMidiFile(file) {
+      try {
+        const parsedSong = await parseMidiFile(file);
+        customSongs.unshift(parsedSong);
+        renderSongCards();
+        showToast(`🎉 Imported "${parsedSong.title}"! Auto-transposed to C Major with ${parsedSong.notes.length} notes & ${parsedSong.accompaniment.length} backing track events!`);
+        loadAndStartSong(parsedSong.id);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠️ Could not parse MIDI file. Make sure it is a valid .mid or .midi file.');
+      }
+    }
+
+    /* Setup Event Listeners */
+    document.getElementById('btn-start-select').onclick = () => setScreen('song-select');
+    document.getElementById('btn-select-back').onclick = () => setScreen('home');
+    document.getElementById('btn-player-home').onclick = () => setScreen('home');
+    document.getElementById('btn-player-change-song').onclick = () => setScreen('song-select');
+    document.getElementById('btn-quick-play').onclick = () => loadAndStartSong('ode-to-joy');
+    document.getElementById('btn-quick-gallop').onclick = () => loadAndStartSong('william-tell');
+    document.getElementById('conductor-mascot').onclick = () => {
+      audio.playNote(0);
+      triggerAnimalBounce(0);
+    };
+
+    document.getElementById('btn-home-settings').onclick = () => document.getElementById('modal-settings').classList.add('active');
+    document.getElementById('btn-select-settings').onclick = () => document.getElementById('modal-settings').classList.add('active');
+    document.getElementById('btn-player-settings').onclick = () => document.getElementById('modal-settings').classList.add('active');
+    document.getElementById('btn-close-settings').onclick = () => document.getElementById('modal-settings').classList.remove('active');
+
+    // MIDI File Inputs
+    document.getElementById('home-midi-input').onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) handleMidiFile(file);
+    };
+    document.getElementById('select-midi-input').onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) handleMidiFile(file);
+    };
+
+    // Drag and drop MIDI files onto the entire window
+    window.addEventListener('dragover', (e) => { e.preventDefault(); });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && (file.name.endsWith('.mid') || file.name.endsWith('.midi'))) {
+        handleMidiFile(file);
+      }
+    });
+
+    // Notation style selector buttons
+    document.querySelectorAll('.notation-opt').forEach(btn => {
+      btn.onclick = () => {
+        teacherSettings.notationStyle = btn.dataset.style;
+        document.querySelectorAll('.notation-opt').forEach(b => b.classList.remove('btn-emerald'));
+        btn.classList.add('btn-emerald');
+        // Update dock badges
+        BOOMWHACKER_NOTES.forEach(meta => {
+          const badge = document.getElementById(`badge-${meta.lane}`);
+          if (badge) badge.textContent = getTubeLabel(meta.lane);
+        });
+      };
+    });
+
+    // Accompaniment toggles
+    document.getElementById('chk-accompaniment').onchange = (e) => {
+      teacherSettings.accompanimentEnabled = e.target.checked;
+      document.getElementById('acc-vol-box').style.display = e.target.checked ? 'flex' : 'none';
+    };
+    document.getElementById('rng-acc-vol').oninput = (e) => {
+      teacherSettings.accompanimentVolume = parseFloat(e.target.value);
+      document.getElementById('txt-acc-vol').textContent = `${Math.round(teacherSettings.accompanimentVolume * 100)}%`;
+    };
+
+    // Metronome toggle
+    document.getElementById('chk-metronome').onchange = (e) => {
+      teacherSettings.metronome = e.target.checked;
+    };
+
+    // Transport buttons
+    document.getElementById('btn-play-pause').onclick = () => {
+      audio.init();
+      isPlaying = !isPlaying;
+      updatePlayBtn();
+    };
+
+    document.getElementById('btn-restart').onclick = () => {
+      audio.init();
+      currentBeat = -4;
+      lastMetronomeBeat = -1;
+      songNotes.forEach(n => n.played = false);
+      songAccompaniment.forEach(a => a.played = false);
+      isPlaying = true;
+      updatePlayBtn();
+    };
+
+    document.getElementById('bpm-slider').oninput = (e) => {
+      setBpm(Number(e.target.value));
+    };
+
+    document.getElementById('btn-modal-replay').onclick = () => {
+      document.getElementById('modal-celebration').classList.remove('active');
+      currentBeat = -4;
+      lastMetronomeBeat = -1;
+      songNotes.forEach(n => n.played = false);
+      songAccompaniment.forEach(a => a.played = false);
+      isPlaying = true;
+      updatePlayBtn();
+    };
+
+    document.getElementById('btn-modal-songs').onclick = () => {
+      document.getElementById('modal-celebration').classList.remove('active');
+      setScreen('song-select');
+    };
+
+    document.getElementById('song-search-input').oninput = renderSongCards;
+
+    // Keyboard support (1-8 to test notes, Space to play/pause, R to restart)
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      if (e.code === 'Space' && currentScreen === 'player') {
+        e.preventDefault();
+        audio.init();
+        isPlaying = !isPlaying;
+        updatePlayBtn();
+      }
+      if (e.key === 'r' || e.key === 'R') {
+        if (currentScreen === 'player') {
+          e.preventDefault();
+          audio.init();
+          currentBeat = -4;
+          lastMetronomeBeat = -1;
+          songNotes.forEach(n => n.played = false);
+          songAccompaniment.forEach(a => a.played = false);
+          isPlaying = true;
+          updatePlayBtn();
+        }
+      }
+      const keyNum = parseInt(e.key);
+      if (keyNum >= 1 && keyNum <= 8) {
+        const lane = keyNum - 1;
+        audio.playNote(lane, teacherSettings.mutedLanes[lane]);
+        triggerAnimalBounce(lane);
+      }
+    });
+
+    // Start UI & loop
+    initUI();
+    animFrame = requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
